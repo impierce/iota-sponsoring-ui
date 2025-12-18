@@ -56,8 +56,8 @@ function handleSuccessfulAuth(): NextResponse {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    // Cookie valid for 7 days
-    maxAge: 60 * 60 * 24 * 7,
+    // Cookie valid for 24 hours
+    maxAge: 60 * 60 * 24,
     path: '/'
   })
   
