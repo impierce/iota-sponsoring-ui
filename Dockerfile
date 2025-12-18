@@ -44,6 +44,8 @@ COPY --from=prerelease /usr/src/app/.next ./.next
 COPY --from=prerelease /usr/src/app/package.json .
 COPY --from=prerelease /usr/src/app/tsconfig.json .
 
+RUN chown -R bun:bun .
+
 # run the app
 USER bun
 EXPOSE 3000/tcp
