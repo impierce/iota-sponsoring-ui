@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 const AUTH_COOKIE_NAME = 'auth_token'
+// In-memory store for session tokens (for production, use a proper session store like Redis)
+const sessionTokens = new Set<string>()
 
 /**
  * Verifies if the provided credentials match the configured password
@@ -18,32 +20,33 @@ function verifyCredentials(username: string, password: string): boolean {
 }
 
 /**
- * Generates a simple token from credentials
- * In production, use proper cryptographic signing
+ * Generates a cryptographically secure random token using Web Crypto API
  */
-function generateToken(username: string, password: string): string {
-  return Buffer.from(`${username}:${password}`).toString('base64')
+function generateSecureToken(): string {
+  const array = new Uint8Array(32)
+  crypto.getRandomValues(array)
+  return btoa(String.fromCharCode(...array))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '')
 }
 
 /**
  * Validates the auth token from cookie
  */
 function validateToken(token: string): boolean {
-  try {
-    const decoded = Buffer.from(token, 'base64').toString('utf-8')
-    const [username, password] = decoded.split(':')
-    return verifyCredentials(username, password)
-  } catch {
-    return false
-  }
+  return sessionTokens.has(token)
 }
 
 /**
  * Handles successful authentication by setting a cookie
  */
-function handleSuccessfulAuth(username: string, password: string): NextResponse {
+function handleSuccessfulAuth(): NextResponse {
   const response = NextResponse.next()
-  const token = generateToken(username, password)
+  const token = generateSecureToken()
+  
+  // Store token in session store
+  sessionTokens.add(token)
   
   response.cookies.set(AUTH_COOKIE_NAME, token, {
     httpOnly: true,
@@ -70,19 +73,43 @@ function requestAuthentication(): NextResponse {
 }
 
 /**
- * Processes Basic Auth header and returns response
+ * Extracts and validates credentials from Basic Auth header
  */
-function processBasicAuth(authHeader: string): NextResponse | null {
+function extractBasicAuthCredentials(authHeader: string): { username: string; password: string } | null {
   if (!authHeader.startsWith('Basic ')) {
     return null
   }
   
-  const [, base64Credentials] = authHeader.split(' ')
-  const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8')
-  const [username, password] = credentials.split(':')
+  try {
+    const [, base64Credentials] = authHeader.split(' ', 2)
+    if (!base64Credentials) {
+      return null
+    }
+    
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8')
+    const colonIndex = credentials.indexOf(':')
+    
+    return colonIndex === -1 ? null : {
+      username: credentials.slice(0, colonIndex),
+      password: credentials.slice(colonIndex + 1)
+    }
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Processes Basic Auth header and returns response
+ */
+function processBasicAuth(authHeader: string): NextResponse | null {
+  const credentials = extractBasicAuthCredentials(authHeader)
   
-  if (verifyCredentials(username, password)) {
-    return handleSuccessfulAuth(username, password)
+  if (!credentials) {
+    return null
+  }
+  
+  if (verifyCredentials(credentials.username, credentials.password)) {
+    return handleSuccessfulAuth()
   }
   
   return null
