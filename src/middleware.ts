@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 const AUTH_COOKIE_NAME = 'auth_token'
-// In-memory store for session tokens (for production, use a proper session store like Redis)
+/**
+ * In-memory store for session tokens
+ * NOTE: This will reset on server restart/redeployment. Users will need to re-authenticate.
+ * For production with multiple instances, consider using Redis or a database for session storage.
+ */
 const sessionTokens = new Set<string>()
 
 /**
@@ -86,7 +90,8 @@ function extractBasicAuthCredentials(authHeader: string): { username: string; pa
       return null
     }
     
-    const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8')
+    // Use atob for Edge Runtime compatibility instead of Buffer
+    const credentials = atob(base64Credentials)
     const colonIndex = credentials.indexOf(':')
     
     return colonIndex === -1 ? null : {
@@ -139,7 +144,6 @@ export function middleware(request: NextRequest) {
 
 /**
  * Configure which routes the middleware should run on
- * Apply to all routes
  */
 export const config = {
   matcher: [
@@ -148,8 +152,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico, icon.svg (icons)
-     * - public files
+     * - files in public directory (images, fonts, etc.)
      */
-    '/((?!_next/static|_next/image|favicon.ico|icon.svg).*)'
+    '/((?!_next/static|_next/image|favicon.ico|icon.svg|.*\\.(?:jpg|jpeg|png|gif|svg|ico|webp|woff|woff2|ttf|eot)).*)'
   ]
 }
