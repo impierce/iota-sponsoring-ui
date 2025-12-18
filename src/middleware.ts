@@ -12,10 +12,10 @@ const sessionTokens = new Set<string>()
  * Verifies if the provided credentials match the configured password
  */
 function verifyCredentials(username: string, password: string): boolean {
-  const configuredPassword = process.env.AUTH_PASSWORD
+  const configuredPassword = process.env.BASIC_AUTH_PASSWORD
   
   if (!configuredPassword) {
-    console.error('AUTH_PASSWORD environment variable is not set')
+    console.error('BASIC_AUTH_PASSWORD environment variable is not set')
     return false
   }
   

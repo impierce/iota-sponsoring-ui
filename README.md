@@ -63,18 +63,8 @@ A Next.js application for IOTA gas station management.
    ```
 3. Configure environment variables:
    ```bash
-   cp env.example .env.local
+   cp .env.example .env
    ```
-   **Important**: Set `AUTH_PASSWORD` in `.env.local` to a secure password for authentication.
-
-### Authentication
-
-The application is protected with basic HTTP authentication. When accessing the app, you'll be prompted by your browser to enter credentials. You can use any username, but the password must match the `AUTH_PASSWORD` environment variable configured in your `.env.local` file.
-
-The authentication uses:
-- Browser-native basic auth dialog
-- Secure HTTP-only cookies for session persistence
-- Cookie validity: 7 days
 
 ### Development
 
