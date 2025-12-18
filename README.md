@@ -61,6 +61,10 @@ A Next.js application for IOTA gas station management.
    ```bash
    bun install
    ```
+3. Configure environment variables:
+   ```bash
+   cp .env.example .env
+   ```
 
 ### Development
 
