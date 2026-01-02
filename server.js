@@ -1,6 +1,6 @@
 import { createServer } from 'http'
-import { parse } from 'url'
 import next from 'next'
+import { parse } from 'url'
 import { WebSocketServer } from 'ws'
 
 const dev = process.env.NODE_ENV !== 'production'
@@ -35,9 +35,8 @@ app.prepare().then(() => {
       // Only proxy WebSocket connections to /api/graphql/ws
       if (pathname === '/api/graphql/ws') {
         wss.handleUpgrade(request, socket, head, (ws) => {
-          console.log('Client connected to WebSocket proxy')
-
           // Create connection to backend with X-API-Key header
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           const WebSocket = require('ws')
           const backendWs = new WebSocket(backendWsUrl, {
             headers: {
@@ -61,7 +60,7 @@ app.prepare().then(() => {
 
           // Handle backend connection open
           backendWs.on('open', () => {
-            console.log('Connected to backend GraphQL WebSocket')
+            // Connection established
           })
 
           // Handle backend errors
@@ -72,13 +71,13 @@ app.prepare().then(() => {
 
           // Handle backend close
           backendWs.on('close', () => {
-            console.log('Backend WebSocket closed')
+            // Backend connection closed
             ws.close()
           })
 
           // Handle client close
           ws.on('close', () => {
-            console.log('Client WebSocket closed')
+            // Client connection closed
             backendWs.close()
           })
 
@@ -92,8 +91,6 @@ app.prepare().then(() => {
         socket.destroy()
       }
     })
-
-    console.log('WebSocket proxy enabled for /api/graphql/ws')
   } else {
     console.warn(
       'WebSocket proxy not configured. Set GRAPHQL_BACKEND_WS_URL and X_API_KEY environment variables.'
@@ -106,6 +103,6 @@ app.prepare().then(() => {
   })
 
   server.listen(port, () => {
-    console.log(`> Ready on http://${hostname}:${port}`)
+    console.error(`> Ready on http://${hostname}:${port}`)
   })
 })
