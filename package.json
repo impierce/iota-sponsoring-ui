@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": false,
   "scripts": {
-    "dev": "bun generate-types && next dev --turbopack",
-    "build": "bun generate-types && next build --turbopack",
-    "start": "bun generate-types && next start",
+    "dev": "npm run generate-types && node server.js",
+    "build": "npm run generate-types && next build",
+    "start": "npm run generate-types && node server.js",
     "lint": "eslint",
     "generate-types": "gql-tada generate-output"
   },
@@ -28,6 +28,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@tanstack/react-form": "^1.23.8",
     "@tanstack/react-table": "^8.21.3",
+    "@types/ws": "^8.18.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -43,6 +44,7 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
+    "ws": "^8.18.3",
     "zod": "^4.1.12"
   },
   "devDependencies": {
