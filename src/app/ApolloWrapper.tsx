@@ -13,6 +13,7 @@ import { PropsWithChildren } from 'react'
 
 /**
  * Validates and returns the API URL from environment variables
+ * This URL should point to the Next.js API proxy (/api/graphql) to avoid exposing API keys
  */
 function getApiUrl(): string {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL?.trim()
@@ -32,6 +33,7 @@ function getApiUrl(): string {
 
 /**
  * Validates and returns the WebSocket URL from environment variables
+ * This URL should point to the Next.js WebSocket proxy (/api/graphql/ws) to avoid exposing API keys
  */
 function getWebSocketUrl(): string {
   const wsUrl = process.env.NEXT_PUBLIC_WS_URL?.trim()

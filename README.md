@@ -65,6 +65,23 @@ A Next.js application for IOTA gas station management.
    ```bash
    cp .env.example .env
    ```
+   
+   **Important Environment Variables:**
+   - `GRAPHQL_BACKEND_URL`: The actual GraphQL backend endpoint URL
+   - `GRAPHQL_BACKEND_WS_URL`: The WebSocket URL for GraphQL subscriptions
+   - `X_API_KEY`: The API key used to authenticate with the GraphQL backend
+   - `NEXT_PUBLIC_API_URL`: The public-facing API URL (should point to `/api/graphql`)
+   - `NEXT_PUBLIC_WS_URL`: The public-facing WebSocket URL (should point to `/api/graphql/ws`)
+   - `BASIC_AUTH_PASSWORD`: Password for basic authentication
+
+### Authentication Proxy
+
+This application uses an authentication proxy to securely communicate with the GraphQL backend without exposing the API key to the client's browser:
+
+- **HTTP Proxy**: GraphQL queries and mutations are proxied through `/api/graphql`, which adds the `X-API-Key` header before forwarding to the backend.
+- **WebSocket Proxy**: GraphQL subscriptions are proxied through `/api/graphql/ws` using a custom Next.js server, which also adds the `X-API-Key` header to WebSocket connections.
+
+The client-side Apollo Client connects to these proxy endpoints instead of directly to the backend, ensuring the API key remains secure on the server side.
 
 ### Development
 
@@ -74,7 +91,7 @@ Start the development server:
 bun dev
 ```
 
-This command automatically generates GraphQL types using `gql.tada` before starting the dev server.
+This command automatically generates GraphQL types using `gql.tada` before starting a custom Next.js server with WebSocket proxy support.
 
 Open [http://localhost:3000](http://localhost:3000) to view the application.
 
