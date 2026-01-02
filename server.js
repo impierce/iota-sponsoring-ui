@@ -1,6 +1,7 @@
 import { createServer } from 'http'
 import next from 'next'
 import { parse } from 'url'
+import WebSocket from 'ws'
 import { WebSocketServer } from 'ws'
 
 const dev = process.env.NODE_ENV !== 'production'
@@ -36,8 +37,6 @@ app.prepare().then(() => {
       if (pathname === '/api/graphql/ws') {
         wss.handleUpgrade(request, socket, head, (ws) => {
           // Create connection to backend with X-API-Key header
-          // eslint-disable-next-line @typescript-eslint/no-require-imports
-          const WebSocket = require('ws')
           const backendWs = new WebSocket(backendWsUrl, {
             headers: {
               'X-API-Key': apiKey
@@ -103,6 +102,7 @@ app.prepare().then(() => {
   })
 
   server.listen(port, () => {
-    console.error(`> Ready on http://${hostname}:${port}`)
+    // eslint-disable-next-line no-console
+    console.log(`> Ready on http://${hostname}:${port}`)
   })
 })
