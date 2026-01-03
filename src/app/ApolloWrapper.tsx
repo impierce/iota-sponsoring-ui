@@ -163,13 +163,16 @@ export const ApolloWrapper = ({ children }: PropsWithChildren) => {
     clientRef.current = makeClient(apiKey)
   }
 
-  // Show loading state while fetching API key
-  if (isLoading) {
+  // Show loading state while fetching API key or if client creation failed
+  if (isLoading || !clientRef.current) {
     return null
   }
 
+  // At this point, clientRef.current is guaranteed to be non-null
+  const client = clientRef.current
+
   return (
-    <ApolloNextAppProvider makeClient={() => clientRef.current!}>
+    <ApolloNextAppProvider makeClient={() => client}>
       {children}
     </ApolloNextAppProvider>
   )
