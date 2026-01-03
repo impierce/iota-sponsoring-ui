@@ -6,10 +6,11 @@ import {
   ApolloNextAppProvider,
   InMemoryCache
 } from '@apollo/client-integration-nextjs'
+import { setContext } from '@apollo/client/link/context'
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
 import { OperationTypeNode } from 'graphql'
 import { createClient } from 'graphql-ws'
-import { PropsWithChildren } from 'react'
+import { PropsWithChildren, useEffect, useRef, useState } from 'react'
 
 /**
  * Validates and returns the API URL from environment variables
@@ -49,7 +50,7 @@ function getWebSocketUrl(): string {
   return wsUrl
 }
 
-function makeClient() {
+function makeClient(apiKey: string | null) {
   // Access environment variables inside the function to ensure they're available at runtime
   const { NODE_ENV } = process.env
 
@@ -64,9 +65,34 @@ function makeClient() {
     }
   })
 
+  // Add authentication context to include API key in headers
+  const authLink = setContext((_, { headers }) => {
+    // Only add the X-API-Key header if we have the API key
+    if (!apiKey) {
+      return { headers }
+    }
+
+    return {
+      headers: {
+        ...headers,
+        'X-API-Key': apiKey
+      }
+    }
+  })
+
   const wsLink = new GraphQLWsLink(
     createClient({
-      url: getWebSocketUrl()
+      url: getWebSocketUrl(),
+      connectionParams: () => {
+        // Only add the X-API-Key header if we have the API key
+        if (!apiKey) {
+          return {}
+        }
+
+        return {
+          'X-API-Key': apiKey
+        }
+      }
     })
   )
 
@@ -81,7 +107,7 @@ function makeClient() {
       return operationType === OperationTypeNode.SUBSCRIPTION
     },
     wsLink,
-    httpLink
+    authLink.concat(httpLink)
   )
 
   return new ApolloClient({
@@ -106,8 +132,44 @@ function makeClient() {
 }
 
 export const ApolloWrapper = ({ children }: PropsWithChildren) => {
+  const [apiKey, setApiKey] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const clientRef = useRef<ReturnType<typeof makeClient> | null>(null)
+
+  useEffect(() => {
+    // Fetch the API key from the server
+    fetch('/api/config')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch API configuration')
+        }
+
+        return response.json()
+      })
+      .then((data) => {
+        setApiKey(data.graphqlApiKey)
+        setIsLoading(false)
+      })
+      .catch((error) => {
+        console.error('Error fetching API key:', error)
+        // Still set loading to false to prevent infinite loading
+        // The app will work without the API key, but might get auth errors from GraphQL
+        setIsLoading(false)
+      })
+  }, [])
+
+  // Create client only once when we have the API key
+  if (!clientRef.current && !isLoading) {
+    clientRef.current = makeClient(apiKey)
+  }
+
+  // Show loading state while fetching API key
+  if (isLoading) {
+    return null
+  }
+
   return (
-    <ApolloNextAppProvider makeClient={makeClient}>
+    <ApolloNextAppProvider makeClient={() => clientRef.current!}>
       {children}
     </ApolloNextAppProvider>
   )
