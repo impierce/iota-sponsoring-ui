@@ -61,12 +61,12 @@ This application implements an authentication proxy that securely communicates w
 
 3. Install dependencies:
    ```bash
-   npm install
+   bun install
    ```
 
 4. Start the development server:
    ```bash
-   npm run dev
+   bun dev
    ```
 
 ## Testing the Proxy

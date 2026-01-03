@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": false,
   "scripts": {
-    "dev": "npm run generate-types && node server.js",
-    "build": "npm run generate-types && next build",
-    "start": "npm run generate-types && node server.js",
+    "dev": "bun generate-types && node server.js",
+    "build": "bun generate-types && next build",
+    "start": "bun generate-types && node server.js",
     "lint": "eslint",
     "generate-types": "gql-tada generate-output"
   },
