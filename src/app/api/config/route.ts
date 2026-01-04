@@ -6,10 +6,10 @@ import { NextResponse } from 'next/server'
  * be accessible after successful authentication
  */
 export async function GET() {
-  const apiKey = process.env.GRAPHQL_API_KEY
+  const apiKey = process.env.API_KEY
 
   if (!apiKey) {
-    console.error('GRAPHQL_API_KEY environment variable is not set')
+    console.error('API_KEY environment variable is not set')
     return NextResponse.json(
       { error: 'API key not configured' },
       { status: 500 }
