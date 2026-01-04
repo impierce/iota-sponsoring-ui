@@ -80,11 +80,26 @@ function makeClient(apiKey: string | null) {
     }
   })
 
+  // Build WebSocket URL with API key as query parameter if available
+  // This is necessary because browsers cannot set custom HTTP headers on WebSocket upgrade requests
+  const getWsUrlWithAuth = () => {
+    const baseUrl = getWebSocketUrl()
+    if (!apiKey) {
+      return baseUrl
+    }
+    
+    // Add API key as query parameter for HTTP upgrade authentication
+    const url = new URL(baseUrl)
+    url.searchParams.set('x-api-key', apiKey)
+    return url.toString()
+  }
+
   const wsLink = new GraphQLWsLink(
     createClient({
-      url: getWebSocketUrl(),
+      url: getWsUrlWithAuth(),
       connectionParams: () => {
-        // Only add the X-API-Key header if we have the API key
+        // Also send API key in connection params for GraphQL protocol authentication
+        // Some servers may read auth from connection_init payload instead of HTTP headers
         if (!apiKey) {
           return {}
         }
